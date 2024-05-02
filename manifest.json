@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Neptune's Pride Captains Log",
+    "version": "1.0.0",
+    "description": "Create captains logs for your Neptune's Pride games",
+    "icons": {
+        "48": "images/solar-system-48.png",
+        "128": "images/solar-system-128.png"
+    },
+    "action": {
+        "default_icon": "images/solar-system-128.png",
+        "default_popup": "index.html"
+    },
+    "host_permissions": [
+        "*://np.ironhelmet.com/game/*"
+    ]
+}
