@@ -7,19 +7,22 @@
     <link rel="stylesheet" type="text/css" href="main.css" />
 </head>
 
-<body>
-    <main class="w-[450px] space-y-12">
-        <header class="prose p-4">
-            <h1>Captains Log</h1>
-            <p id="game-id"></p>
+<body class="bg-[#1a1d44]">
+    <main class="w-[450px]">
+        <header class="px-3 pt-4 pb-2">
+            <h1 class="text-white text-4xl mb-1">Captains Log</h1>
+            <p class="text-gray-400 text-lg font-mono">Universe: <span id="game-id"></span></p>
         </header>
-        <section class="flex flex-col gap-2 p-4">
-            <textarea id="log-input">This is only a test</textarea>
-            <button id="btn" class="w-full bg-purple-400 p-4 text-lg rounded">
-                Submit
-            </button>
+        <section class="p-3 mb-4">
+            <textarea id="log-input"
+                class="h-[180px] w-full mb-2 bg-black text-[#FDF0DC] border-[3px] border-[#2C3273] rounded"></textarea>
+            <div class="flex justify-between">
+                <button id="clear-btn" class="btn">Clear</button>
+                <button id="submit-btn" class="btn">Submit</button>
+            </div>
         </section>
-        <section id="log-messages" class="prose"></section>
+        <section id="log-messages" class="bg-[#1a1d44]">
+        </section>
     </main>
 </body>
 

@@ -1,4 +1,4 @@
-const btn = document.getElementById("btn");
+const submitBtn = document.getElementById("submit-btn");
 const input = document.getElementById("log-input");
 const logContainer = document.getElementById("log-messages");
 const subheading = document.getElementById("game-id");
@@ -45,12 +45,16 @@ function setLogEntriesInLogContainer(gameId) {
 }
 
 function makeLogEntryHtml(logText) {
+    const classes = "p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg"
     const p = document.createElement("p");
     p.textContent = logText;
+    for (c of classes.split(" ")) {
+        p.classList.add(c);
+    }
     logContainer.appendChild(p);
 }
 
-btn.addEventListener("click", async () => {
+submitBtn.addEventListener("click", async () => {
     const gameId = await getGameId();
     addLogEntryToLocalStorage(gameId, input.value);
     setLogEntriesInLogContainer(gameId);
