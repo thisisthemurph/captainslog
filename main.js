@@ -27,9 +27,10 @@ function getLogsFromLocalStorage(gameId) {
     return JSON.parse(currentLogs);
 }
 
-function addLogEntryToLocalStorage(gameId, log) {
+function addLogEntryToLocalStorage(gameId, text) {
     let gameLog = getLogsFromLocalStorage(gameId);
-    gameLog.logs = [...gameLog.logs, log];
+    const timestamp = Date.now();
+    gameLog.logs = [...gameLog.logs, { text, timestamp }];
 
     const json = JSON.stringify(gameLog);
     localStorage.setItem(gameId, json);
@@ -44,14 +45,31 @@ function setLogEntriesInLogContainer(gameId) {
     }
 }
 
-function makeLogEntryHtml(logText) {
-    const classes = "p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg"
-    const p = document.createElement("p");
-    p.textContent = logText;
+function addStringOfClassesToHtmlElement(elem, classes) {
     for (c of classes.split(" ")) {
-        p.classList.add(c);
+        elem.classList.add(c);
     }
-    logContainer.appendChild(p);
+}
+
+function makeLogEntryHtml(logEntry) {
+    const containerClasses = "p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg"
+    const dateClasses = "flex justify-end text-sm text-[#99a2ff]"
+    const headerClasses = "mb-2"
+
+    const containerElem = document.createElement("div");
+    addStringOfClassesToHtmlElement(containerElem, containerClasses);
+    const headerElem = document.createElement("header");
+    addStringOfClassesToHtmlElement(headerElem, headerClasses);
+    const dateElem = document.createElement("span");
+    addStringOfClassesToHtmlElement(dateElem, dateClasses)
+    const textElem = document.createElement("p");
+
+    textElem.textContent = logEntry.text;
+    dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
+
+    containerElem.appendChild(dateElem);
+    containerElem.appendChild(textElem);
+    logContainer.appendChild(containerElem);
 }
 
 submitBtn.addEventListener("click", async () => {
