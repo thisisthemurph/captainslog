@@ -1,28 +1,33 @@
 const btn = document.getElementById("btn");
 const input = document.getElementById("log-input");
 const logContainer = document.getElementById("log-messages");
+const subheading = document.getElementById("game-id");
 
-function getGameId() {
-    let gameId = 0;
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const url = tabs[0].url;
-        const segments = url.split("/");
-        const lastSegment = segments[segments.length - 1];
-        gameId = parseInt(lastSegment, 10);
-    });
-    return gameId;
+async function getCurrentTab() {
+    const queryOptions = { active: true, currentWindow: true }
+    let [tab] = await chrome.tabs.query(queryOptions);
+    return tab;
+}
+
+async function getGameId() {
+    const tab = await getCurrentTab();
+    const url = tab.url;
+    const segments = url.split("/");
+    const lastSegment = segments[segments.length - 1];
+
+    return parseInt(lastSegment, 10);
 }
 
 function getLogsFromLocalStorage(gameId) {
     const currentLogs = localStorage.getItem(gameId);
     if (currentLogs === null) {
         console.log("there are no logs");
-        return { game_id: gameId, logs: [] };
+        return { gameId, logs: [] };
     }
     return JSON.parse(currentLogs);
 }
 
-function addLogToLocalStorage(gameId, log) {
+function addLogEntryToLocalStorage(gameId, log) {
     let gameLog = getLogsFromLocalStorage(gameId);
     gameLog.logs = [...gameLog.logs, log];
 
@@ -30,8 +35,7 @@ function addLogToLocalStorage(gameId, log) {
     localStorage.setItem(gameId, json);
 }
 
-function setLogEntriesInLogContainer() {
-    const gameId = getGameId();
+function setLogEntriesInLogContainer(gameId) {
     const gameLog = getLogsFromLocalStorage(gameId);
 
     logContainer.innerHTML = "";
@@ -46,10 +50,14 @@ function makeLogEntryHtml(logText) {
     logContainer.appendChild(p);
 }
 
-btn.addEventListener("click", () => {
-    const gameId = getGameId();
-    addLogToLocalStorage(gameId, input.value);
-    setLogEntriesInLogContainer();
+btn.addEventListener("click", async () => {
+    const gameId = await getGameId();
+    addLogEntryToLocalStorage(gameId, input.value);
+    setLogEntriesInLogContainer(gameId);
 });
 
-document.addEventListener("DOMContentLoaded", setLogEntriesInLogContainer);
+document.addEventListener("DOMContentLoaded", async () => {
+    const gameId = await getGameId();
+    subheading.textContent = gameId;
+    setLogEntriesInLogContainer(gameId);
+});
