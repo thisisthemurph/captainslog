@@ -3,21 +3,46 @@ const input = document.getElementById("log-input");
 const logContainer = document.getElementById("log-messages");
 const subheading = document.getElementById("game-id");
 
-async function getCurrentTab() {
+/**
+ * @typedef {Object} LogEntry
+ * @property {string} text
+ * @property {string} timestamp
+ * 
+ * @typedef {Object} GameLog
+ * @property {number} gameId
+ * @property {LogEntry[]} logs
+ */
+
+/**
+ * Returns a promise that resolves to the URL of the current tab.
+ * @async
+ * @returns {Promise<string>} the URL of the current tab.
+ */
+async function getCurrentTabUrl() {
     const queryOptions = { active: true, currentWindow: true }
     let [tab] = await chrome.tabs.query(queryOptions);
-    return tab;
+    return tab.url;
 }
 
+/**
+ * Asynchronously retrieves the game ID from the current tab's URL.
+ * 
+ * @async
+ * @returns {Promise<number>} A promise that resolves to an integer representing the game ID.
+ */
 async function getGameId() {
-    const tab = await getCurrentTab();
-    const url = tab.url;
+    const url = await getCurrentTabUrl();
     const segments = url.split("/");
     const lastSegment = segments[segments.length - 1];
 
     return parseInt(lastSegment, 10);
 }
 
+/**
+ * Retrieves logs from local storage for a given game ID.
+ * @param {number} gameId 
+ * @returns {GameLog} The game log object containing the game ID and an array of log entries.
+ */
 function getLogsFromLocalStorage(gameId) {
     const currentLogs = localStorage.getItem(gameId);
     if (currentLogs === null) {
@@ -27,6 +52,11 @@ function getLogsFromLocalStorage(gameId) {
     return JSON.parse(currentLogs);
 }
 
+/**
+ * Stores the given log text in local storage.
+ * @param {number} gameId 
+ * @param {string} text 
+ */
 function addLogEntryToLocalStorage(gameId, text) {
     let gameLog = getLogsFromLocalStorage(gameId);
     const timestamp = Date.now();
@@ -36,6 +66,10 @@ function addLogEntryToLocalStorage(gameId, text) {
     localStorage.setItem(gameId, json);
 }
 
+/**
+ * Presents the logs in the UI.
+ * @param {number} gameId
+ */
 function setLogEntriesInLogContainer(gameId) {
     const gameLog = getLogsFromLocalStorage(gameId);
 
@@ -45,12 +79,22 @@ function setLogEntriesInLogContainer(gameId) {
     }
 }
 
+/**
+ * Adds the given CSS classes to the given HTML element.
+ * @param {HTMLElement} elem The HTML element.
+ * @param {string} classes A string of space separated CSS classes.
+ */
 function addStringOfClassesToHtmlElement(elem, classes) {
     for (c of classes.split(" ")) {
         elem.classList.add(c);
     }
 }
 
+/**
+ * Helper function to construct log entry HTML structure.
+ * Appends the log entry to the container HTML element.
+ * @param {LogEntry} logEntry 
+ */
 function makeLogEntryHtml(logEntry) {
     const containerClasses = "p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg"
     const dateClasses = "flex justify-end text-sm text-[#99a2ff]"
