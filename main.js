@@ -1,6 +1,10 @@
+/** @type HTMLButtonElement */
 const submitBtn = document.getElementById("submit-btn");
+/** @type HTMLTextAreaElement */
 const input = document.getElementById("log-input");
+/** @type HTMLElement */
 const logContainer = document.getElementById("log-messages");
+/** @type HTMLElement */
 const subheading = document.getElementById("game-id");
 
 /**
@@ -117,6 +121,11 @@ function makeLogEntryHtml(logEntry) {
 }
 
 submitBtn.addEventListener("click", async () => {
+    if (input.value.trim().length == 0) {
+        alert("A log entry is required!");
+        return;
+    }
+
     const gameId = await getGameId();
     addLogEntryToLocalStorage(gameId, input.value);
     setLogEntriesInLogContainer(gameId);
