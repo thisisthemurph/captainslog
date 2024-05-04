@@ -120,6 +120,8 @@ submitBtn.addEventListener("click", async () => {
     const gameId = await getGameId();
     addLogEntryToLocalStorage(gameId, input.value);
     setLogEntriesInLogContainer(gameId);
+    input.value = "";
+    input.focus();
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
