@@ -43,7 +43,7 @@ async function getGameId() {
  * @param {number} gameId 
  * @returns {GameLog} The game log object containing the game ID and an array of log entries.
  */
-function getLogsFromLocalStorage(gameId) {
+function getGameLogFromLocalStorage(gameId) {
     const currentLogs = localStorage.getItem(gameId);
     if (currentLogs === null) {
         console.log("there are no logs");
@@ -58,7 +58,7 @@ function getLogsFromLocalStorage(gameId) {
  * @param {string} text 
  */
 function addLogEntryToLocalStorage(gameId, text) {
-    let gameLog = getLogsFromLocalStorage(gameId);
+    let gameLog = getGameLogFromLocalStorage(gameId);
     const timestamp = Date.now();
     gameLog.logs = [...gameLog.logs, { text, timestamp }];
 
@@ -71,10 +71,10 @@ function addLogEntryToLocalStorage(gameId, text) {
  * @param {number} gameId
  */
 function setLogEntriesInLogContainer(gameId) {
-    const gameLog = getLogsFromLocalStorage(gameId);
-
     logContainer.innerHTML = "";
-    for (const entry of gameLog.logs) {
+    const gameLog = getGameLogFromLocalStorage(gameId);
+    for (let i = gameLog.logs.length - 1; i >= 0; i--) {
+        const entry = gameLog.logs[i];
         makeLogEntryHtml(entry);
     }
 }
