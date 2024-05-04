@@ -5,3 +5,15 @@
 .btn {
     @apply py-[6px] px-12 bg-[#5961bb] hover:bg-[#FF9000] text-white text-lg rounded;
 }
+
+::-webkit-scrollbar {
+    @apply w-1 bg-slate-800;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-[1ex];
+}
+
+::-webkit-scrollbar-corner {
+    @apply bg-slate-800;
+}

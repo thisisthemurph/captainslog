@@ -896,6 +896,23 @@ select {
   background-color: rgb(255 144 0 / var(--tw-bg-opacity));
 }
 
+::-webkit-scrollbar {
+  width: 0.25rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity));
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 1ex;
+  --tw-bg-opacity: 1;
+  background-color: rgb(71 85 105 / var(--tw-bg-opacity));
+}
+
+::-webkit-scrollbar-corner {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity));
+}
+
 .odd\:bg-\[\#2C3273\]:nth-child(odd) {
   --tw-bg-opacity: 1;
   background-color: rgb(44 50 115 / var(--tw-bg-opacity));
