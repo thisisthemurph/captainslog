@@ -110,13 +110,18 @@ function makeLogEntryHtml(logEntry) {
     addStringOfClassesToHtmlElement(headerElem, headerClasses);
     const dateElem = document.createElement("span");
     addStringOfClassesToHtmlElement(dateElem, dateClasses)
-    const textElem = document.createElement("p");
 
-    textElem.textContent = logEntry.text;
     dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
-
     containerElem.appendChild(dateElem);
-    containerElem.appendChild(textElem);
+
+    const lines = logEntry.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const textElem = document.createElement("p");
+        textElem.textContent = line;
+        containerElem.appendChild(textElem);
+    }
+
     logContainer.appendChild(containerElem);
 }
 
