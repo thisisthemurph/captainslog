@@ -8,14 +8,138 @@ const logContainer = document.getElementById("log-messages");
 const subheading = document.getElementById("game-id");
 
 /**
- * @typedef {Object} LogEntry
+ * @typedef {Object} LogEntryObject
  * @property {string} text
  * @property {string} timestamp
  * 
- * @typedef {Object} GameLog
+ * @typedef {Object} GameLogObject
  * @property {number} gameId
- * @property {LogEntry[]} logs
+ * @property {LogEntryObject[]} logs
  */
+
+/** Class representing a Game. */
+class Game {
+    /**
+     * Creates a new Game.
+     * @param {number} gameId - The ID of the game.
+     */
+    constructor(gameId) {
+        this.id = gameId;
+        this.log = this.getGameLog();
+    }
+
+    /**
+     * Gets the game log from LocalStorage if it exists. Returns a new game log if it doesn't exist.
+     * @returns {GameLog}
+     */
+    getGameLog() {
+        const newGameLog = new GameLog(this.id);
+        const gameLogJson = localStorage.getItem(this.id);
+
+        if (gameLogJson === null) {
+            console.info(`Game ${this.id} has no logs.`);
+            return newGameLog;
+        }
+
+        /** @type GameLogObject */
+        const gameLogData = JSON.parse(gameLogJson);
+        for (let log of gameLogData.logs) {
+            newGameLog.addLogEntry(log.text);
+        }
+        return newGameLog;
+    }
+
+    /**
+     * Saves the game log in LocalStorage, overwrites if gameId already exists.
+     * @param {GameLog} gameLog the game log to be persisted
+     */
+    save() {
+        localStorage.setItem(this.id, this.log.toJson());
+    }
+}
+
+/** Class representing a GameLog */
+class GameLog {
+    /**
+     * Creates a new GameLog.
+     * @param {number} gameId 
+     */
+    constructor(gameId) {
+        this.gameId = gameId;
+        /** @type LogEntry[] */
+        this.logs = [];
+    }
+
+    /**
+     * Adds a new log entry to the game log.
+     * @param {string} text 
+     */
+    addLogEntry(text) {
+        const entry = new LogEntry(this.gameId, text);
+        this.logs.push(entry);
+    }
+
+    /**
+     * Removes the log entry at the given index.
+     * @param {number} index 
+     */
+    removeAtIndex(index) {
+        if (this.logs.length >= index) {
+            this.logs.splice(index, 1);
+        }
+    }
+
+    /**
+     * Returns the GameLog as a JSON string.
+     * @returns {string} the JSON data
+     */
+    toJson() {
+        return JSON.stringify(this.asObject());
+    }
+
+    /**
+     * Returns a POJO of the GameLog class.
+     * @returns {GameLogObject}
+     */
+    asObject() {
+        const data = { gameId: this.gameId, logs: [] };
+        for (let log of this.logs) {
+            data.logs.push(log.asObject());
+        }
+        return data;
+    }
+}
+
+/** Class representing a single LogEntry */
+class LogEntry {
+    /**
+     * Creates a new LogEntry. If no timestamp is provided, the current time is used.
+     * @param {number} gameId 
+     * @param {string} text 
+     * @param {Date} timestamp 
+     */
+    constructor(gameId, text, timestamp = null) {
+        this.gameId = gameId;
+        this.text = text;
+        this.timestamp = timestamp === null ? Date.now() : timestamp;
+    }
+
+    /**
+     * Returns the formatted timestamp
+     * @returns {string} the formatted date
+     */
+    formattedDate() {
+        return dateFns.format(this.timestamp, "eee d MMM HH:mm");
+    }
+
+    /**
+     * Returns a POJO representation of the class.
+     * @returns {LogEntryObject}
+     */
+    asObject() {
+        return { gameId: this.gameId, text: this.text, timestamp: this.timestamp };
+    }
+}
 
 /**
  * Returns a promise that resolves to the URL of the current tab.
@@ -42,77 +166,38 @@ async function getGameId() {
     return parseInt(lastSegment, 10);
 }
 
-/**
- * Retrieves logs from local storage for a given game ID.
- * @param {number} gameId 
- * @returns {GameLog} The game log object containing the game ID and an array of log entries.
- */
-function getGameLogFromLocalStorage(gameId) {
-    const currentLogs = localStorage.getItem(gameId);
-    if (currentLogs === null) {
-        console.log("there are no logs");
-        return { gameId, logs: [] };
+submitBtn.addEventListener("click", async () => {
+    if (input.value.trim().length == 0) {
+        alert("A log entry is required!");
+        return;
     }
-    return JSON.parse(currentLogs);
-}
 
-/**
- * Stores the given log text in local storage.
- * @param {number} gameId 
- * @param {string} text 
- */
-function addLogEntryToLocalStorage(gameId, text) {
-    let gameLog = getGameLogFromLocalStorage(gameId);
-    const timestamp = Date.now();
-    gameLog.logs = [...gameLog.logs, { text, timestamp }];
+    const gameId = await getGameId();
+    const game = new Game(gameId);
+    game.log.addLogEntry(input.value);
+    game.save();
 
-    const json = JSON.stringify(gameLog);
-    localStorage.setItem(gameId, json);
-}
-
-/**
- * Removes a log entry from the game log associated with the given gameId.
- * @param {number} gameId The game to be updated.
- * @param {number} indexToDelete The index of the log to be removed.
- */
-function deleteLogEntryFromLocalStorage(gameId, indexToDelete) {
-    const gameLog = getGameLogFromLocalStorage(gameId);
-    gameLog.logs.splice(indexToDelete, 1);
-    const json = JSON.stringify(gameLog);
-    localStorage.setItem(gameId, json);
     refreshLogsInUi(gameId);
-}
+    input.value = "";
+    input.focus();
+});
 
-/**
- * Presents the logs in the UI.
- * @param {number} gameId
- */
-function refreshLogsInUi(gameId) {
-    logContainer.innerHTML = "";
-    const gameLog = getGameLogFromLocalStorage(gameId);
-    for (let i = gameLog.logs.length - 1; i >= 0; i--) {
-        const entry = gameLog.logs[i];
-        makeLogEntryHtml(i, gameId, entry);
-    }
-}
+document.addEventListener("DOMContentLoaded", async () => {
+    const gameId = await getGameId();
+    subheading.textContent = gameId;
+    refreshLogsInUi(gameId);
+});
 
-/**
- * Adds the given CSS classes to the given HTML element.
- * @param {HTMLElement} elem The HTML element.
- * @param {string} classes A string of space separated CSS classes.
- */
-function addStringOfClassesToHtmlElement(elem, classes) {
-    for (c of classes.split(" ")) {
-        elem.classList.add(c);
-    }
-}
+//
+// UI functions
+//
 
 /**
  * Helper function to construct log entry HTML structure.
  * Appends the log entry to the container HTML element.
  * @param {number} index
  * @param {number} gameId
- * @param {LogEntry} logEntry 
+ * @param {LogEntryObject} logEntry 
  */
 function makeLogEntryHtml(index, gameId, logEntry) {
     const containerClasses = "group p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb]"
@@ -130,8 +215,10 @@ function makeLogEntryHtml(index, gameId, logEntry) {
     addStringOfClassesToHtmlElement(deleteBtnElem, deleteBtnStyles);
     deleteBtnElem.textContent = "Delete";
     deleteBtnElem.addEventListener("click", () => {
-        console.log("Deleting number " + index);
-        deleteLogEntryFromLocalStorage(gameId, index);
+        const game = new Game(gameId);
+        game.log.removeAtIndex(index);
+        game.save();
+        refreshLogsInUi(gameId);
     });
 
     dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
@@ -150,21 +237,27 @@ function makeLogEntryHtml(index, gameId, logEntry) {
     logContainer.appendChild(containerElem);
 }
 
-submitBtn.addEventListener("click", async () => {
-    if (input.value.trim().length == 0) {
-        alert("A log entry is required!");
-        return;
+/**
+ * Presents the logs in the UI.
+ * @param {number} gameId
+ */
+function refreshLogsInUi(gameId) {
+    const game = new Game(gameId);
+
+    logContainer.innerHTML = "";
+    for (let i = game.log.logs.length - 1; i >= 0; i--) {
+        const entry = game.log.logs[i];
+        makeLogEntryHtml(i, gameId, entry);
     }
+}
 
-    const gameId = await getGameId();
-    addLogEntryToLocalStorage(gameId, input.value);
-    refreshLogsInUi(gameId);
-    input.value = "";
-    input.focus();
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const gameId = await getGameId();
-    subheading.textContent = gameId;
-    refreshLogsInUi(gameId);
-});
+/**
+ * Adds the given CSS classes to the given HTML element.
+ * @param {HTMLElement} elem The HTML element.
+ * @param {string} classes A string of space separated CSS classes.
+ */
+function addStringOfClassesToHtmlElement(elem, classes) {
+    for (c of classes.split(" ")) {
+        elem.classList.add(c);
+    }
+}
