@@ -19,15 +19,158 @@ const subheading = document.getElementById("game-id");
  * @property {LogEntryObject[]} logs
  */
 
+/**
+ * Returns a promise that resolves to the URL of the current tab.
+ * @async
+ * @returns {Promise<string>} the URL of the current tab.
+ */
+async function getCurrentTabUrl() {
+    const queryOptions = { active: true, currentWindow: true }
+    let [tab] = await chrome.tabs.query(queryOptions);
+    return tab.url;
+}
+
+/**
+ * Asynchronously retrieves the game ID from the current tab's URL.
+ * @async
+ * @returns {Promise<number|null>} A promise that resolves to an integer representing the game ID.
+ */
+async function getGameId() {
+    let url;
+    try {
+        url = await getCurrentTabUrl();
+    } catch {
+        console.warn("Could not determine url, unable to get current tab.")
+        return null;
+    }
+
+    let segments;
+    try {
+        segments = url.split("/");
+    } catch {
+        console.warn("Could not determine url, malformed.")
+        return null;
+    }
+
+    const lastSegment = segments[segments.length - 1];
+    return parseInt(lastSegment, 10);
+}
+
+class UI {
+    constructor() {
+        /** @type HTMLButtonElement */
+        this.submitBtn = document.getElementById("submit-btn");
+        /** @type HTMLButtonElement */
+        this.clearBtn = document.getElementById("clear-btn");
+        /** @type HTMLTextAreaElement */
+        this.input = document.getElementById("log-input");
+        /** @type HTMLElement */
+        this.logContainer = document.getElementById("log-messages");
+        /** @type HTMLElement */
+        this.subheading = document.getElementById("game-id");
+    }
+
+    /**
+     * Presents the logs in the UI.
+     * @param {number} gameId
+     */
+    refresh(gameId) {
+        const game = new Game(new UI(), gameId);
+
+        logContainer.innerHTML = "";
+        for (let i = game.log.logs.length - 1; i >= 0; i--) {
+            const entry = game.log.logs[i];
+            this.#makeLogEntryHtml(i, gameId, entry);
+        }
+    }
+
+    /**
+     * Presents a notification to the user if they try to use the extension outside of a game.
+     */
+    showWrongUrlNotification() {
+        const container = document.querySelector("#content-section");
+
+        const p = document.createElement("p");
+        this.#addClasses(p, "text-lg")
+        const t1 = document.createElement("span");
+        const t2 = document.createElement("span");
+        const link = document.createElement("a");
+
+        t1.textContent = "This extension only works on the Neptune's Pride website. Visit ";
+        link.textContent = "Neptune's Pride"
+        link.href = "https://np.ironhelmet.com/#load_game"
+        link.target = "_blank"
+        t2.textContent = " to select your game.";
+
+        p.appendChild(t1);
+        p.appendChild(link);
+        p.appendChild(t2);
+
+        container.innerHTML = "";
+        container.appendChild(p);
+    }
+
+    #makeLogEntryHtml(index, gameId, logEntry) {
+        const containerClasses = "group p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb]"
+        const dateClasses = "flex justify-end text-sm text-[#99a2ff] group-hover:hidden"
+        const headerClasses = "flex justify-end min-h-6"
+        const deleteBtnStyles = "btn-sm hidden group-hover:block"
+
+        const containerElem = document.createElement("div");
+        this.#addClasses(containerElem, containerClasses);
+        const headerElem = document.createElement("header");
+        this.#addClasses(headerElem, headerClasses);
+        const dateElem = document.createElement("span");
+        this.#addClasses(dateElem, dateClasses);
+        const deleteBtnElem = document.createElement("button");
+        this.#addClasses(deleteBtnElem, deleteBtnStyles);
+        deleteBtnElem.textContent = "Delete";
+        deleteBtnElem.addEventListener("click", () => {
+            const game = new Game(new UI(), gameId);
+            game.log.removeAtIndex(index);
+            game.save();
+            this.refresh(gameId);
+        });
+
+        dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
+        headerElem.appendChild(deleteBtnElem);
+        headerElem.appendChild(dateElem);
+        containerElem.appendChild(headerElem);
+
+        const lines = logEntry.text.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const textElem = document.createElement("p");
+            textElem.textContent = line;
+            containerElem.appendChild(textElem);
+        }
+
+        logContainer.appendChild(containerElem);
+    }
+
+    /**
+     * Adds the given CSS classes to the given HTML element.
+     * @param {HTMLElement} elem The HTML element.
+     * @param {string} classes A string of space separated CSS classes.
+     */
+    #addClasses(elem, classes) {
+        for (let c of classes.split(" ")) {
+            elem.classList.add(c);
+        }
+    }
+}
+
 /** Class representing a Game. */
 class Game {
     /**
      * Creates a new Game.
+     * @param {UI} ui - The user interface of the app.
      * @param {number} gameId - The ID of the game.
      */
-    constructor(gameId) {
+    constructor(ui, gameId) {
         this.id = gameId;
         this.log = this.getGameLog();
+        this.ui = ui
     }
 
     /**
@@ -143,46 +286,9 @@ class LogEntry {
     }
 }
 
-/**
- * Returns a promise that resolves to the URL of the current tab.
- * @async
- * @returns {Promise<string>} the URL of the current tab.
- */
-async function getCurrentTabUrl() {
-    const queryOptions = { active: true, currentWindow: true }
-    let [tab] = await chrome.tabs.query(queryOptions);
-    return tab.url;
-}
-
-/**
- * Asynchronously retrieves the game ID from the current tab's URL.
- * 
- * @async
- * @returns {Promise<number|null>} A promise that resolves to an integer representing the game ID.
- */
-async function getGameId() {
-    let url;
-    try {
-        url = await getCurrentTabUrl();
-    } catch {
-        console.warn("Could not determine url, unable to get current tab.")
-        return null;
-    }
-
-    let segments;
-    try {
-        segments = url.split("/");
-    } catch {
-        console.warn("Could not determine url, malformed.")
-        return null;
-    }
-
-    const lastSegment = segments[segments.length - 1];
-
-    return parseInt(lastSegment, 10);
-}
-
 submitBtn.addEventListener("click", async () => {
+    const ui = new UI();
+
     if (input.value.trim().length == 0) {
         alert("A log entry is required!");
         return;
@@ -190,15 +296,15 @@ submitBtn.addEventListener("click", async () => {
 
     const gameId = await getGameId();
     if (gameId === null) {
-        showWrongUrlNotification();
+        ui.showWrongUrlNotification();
         return;
     }
 
-    const game = new Game(gameId);
+    const game = new Game(ui, gameId);
     game.log.addLogEntry(input.value);
     game.save();
 
-    refreshLogsInUi(gameId);
+    game.ui.refresh(gameId);
     input.value = "";
     input.focus();
 });
@@ -209,112 +315,13 @@ clearBtn.addEventListener("click", () => {
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
+    const ui = new UI();
     const gameId = await getGameId();
     if (gameId === null) {
-        showWrongUrlNotification();
+        ui.showWrongUrlNotification();
         return;
     }
 
     subheading.textContent = gameId;
-    refreshLogsInUi(gameId);
+    ui.refresh(gameId);
 });
-
-//
-// UI functions
-//
-
-/**
- * Helper function to construct log entry HTML structure.
- * Appends the log entry to the container HTML element.
- * @param {number} index
- * @param {number} gameId
- * @param {LogEntryObject} logEntry 
- */
-function makeLogEntryHtml(index, gameId, logEntry) {
-    const containerClasses = "group p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb]"
-    const dateClasses = "flex justify-end text-sm text-[#99a2ff] group-hover:hidden"
-    const headerClasses = "flex justify-end min-h-6"
-    const deleteBtnStyles = "btn-sm hidden group-hover:block"
-
-    const containerElem = document.createElement("div");
-    addStringOfClassesToHtmlElement(containerElem, containerClasses);
-    const headerElem = document.createElement("header");
-    addStringOfClassesToHtmlElement(headerElem, headerClasses);
-    const dateElem = document.createElement("span");
-    addStringOfClassesToHtmlElement(dateElem, dateClasses);
-    const deleteBtnElem = document.createElement("button");
-    addStringOfClassesToHtmlElement(deleteBtnElem, deleteBtnStyles);
-    deleteBtnElem.textContent = "Delete";
-    deleteBtnElem.addEventListener("click", () => {
-        const game = new Game(gameId);
-        game.log.removeAtIndex(index);
-        game.save();
-        refreshLogsInUi(gameId);
-    });
-
-    dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
-    headerElem.appendChild(deleteBtnElem);
-    headerElem.appendChild(dateElem);
-    containerElem.appendChild(headerElem);
-
-    const lines = logEntry.text.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const textElem = document.createElement("p");
-        textElem.textContent = line;
-        containerElem.appendChild(textElem);
-    }
-
-    logContainer.appendChild(containerElem);
-}
-
-/**
- * Presents the logs in the UI.
- * @param {number} gameId
- */
-function refreshLogsInUi(gameId) {
-    const game = new Game(gameId);
-
-    logContainer.innerHTML = "";
-    for (let i = game.log.logs.length - 1; i >= 0; i--) {
-        const entry = game.log.logs[i];
-        makeLogEntryHtml(i, gameId, entry);
-    }
-}
-
-/**
- * Adds the given CSS classes to the given HTML element.
- * @param {HTMLElement} elem The HTML element.
- * @param {string} classes A string of space separated CSS classes.
- */
-function addStringOfClassesToHtmlElement(elem, classes) {
-    for (c of classes.split(" ")) {
-        elem.classList.add(c);
-    }
-}
-
-/**
- * Presents a notification to the user if they try to use the extension outside of a game.
- */
-function showWrongUrlNotification() {
-    const container = document.querySelector("#content-section");
-
-    const p = document.createElement("p");
-    addStringOfClassesToHtmlElement(p, "text-lg")
-    const t1 = document.createElement("span");
-    const t2 = document.createElement("span");
-    const link = document.createElement("a");
-
-    t1.textContent = "This extension only works on the Neptune's Pride website. Visit ";
-    link.textContent = "Neptune's Pride"
-    link.href = "https://np.ironhelmet.com/#load_game"
-    link.target = "_blank"
-    t2.textContent = " to select your game.";
-
-    p.appendChild(t1);
-    p.appendChild(link);
-    p.appendChild(t2);
-
-    container.innerHTML = "";
-    container.appendChild(p);
-}
