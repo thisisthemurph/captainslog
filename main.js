@@ -158,11 +158,25 @@ async function getCurrentTabUrl() {
  * Asynchronously retrieves the game ID from the current tab's URL.
  * 
  * @async
- * @returns {Promise<number>} A promise that resolves to an integer representing the game ID.
+ * @returns {Promise<number|null>} A promise that resolves to an integer representing the game ID.
  */
 async function getGameId() {
-    const url = await getCurrentTabUrl();
-    const segments = url.split("/");
+    let url;
+    try {
+        url = await getCurrentTabUrl();
+    } catch {
+        console.warn("Could not determine url, unable to get current tab.")
+        return null;
+    }
+
+    let segments;
+    try {
+        segments = url.split("/");
+    } catch {
+        console.warn("Could not determine url, malformed.")
+        return null;
+    }
+
     const lastSegment = segments[segments.length - 1];
 
     return parseInt(lastSegment, 10);
@@ -175,6 +189,11 @@ submitBtn.addEventListener("click", async () => {
     }
 
     const gameId = await getGameId();
+    if (gameId === null) {
+        showWrongUrlNotification();
+        return;
+    }
+
     const game = new Game(gameId);
     game.log.addLogEntry(input.value);
     game.save();
@@ -191,6 +210,11 @@ clearBtn.addEventListener("click", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
     const gameId = await getGameId();
+    if (gameId === null) {
+        showWrongUrlNotification();
+        return;
+    }
+
     subheading.textContent = gameId;
     refreshLogsInUi(gameId);
 });
@@ -267,4 +291,30 @@ function addStringOfClassesToHtmlElement(elem, classes) {
     for (c of classes.split(" ")) {
         elem.classList.add(c);
     }
+}
+
+/**
+ * Presents a notification to the user if they try to use the extension outside of a game.
+ */
+function showWrongUrlNotification() {
+    const container = document.querySelector("#content-section");
+
+    const p = document.createElement("p");
+    addStringOfClassesToHtmlElement(p, "text-lg")
+    const t1 = document.createElement("span");
+    const t2 = document.createElement("span");
+    const link = document.createElement("a");
+
+    t1.textContent = "This extension only works on the Neptune's Pride website. Visit ";
+    link.textContent = "Neptune's Pride"
+    link.href = "https://np.ironhelmet.com/#load_game"
+    link.target = "_blank"
+    t2.textContent = " to select your game.";
+
+    p.appendChild(t1);
+    p.appendChild(link);
+    p.appendChild(t2);
+
+    container.innerHTML = "";
+    container.appendChild(p);
 }

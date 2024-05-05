@@ -778,14 +778,6 @@ select {
   height: 180px;
 }
 
-.min-h-\[2rem\] {
-  min-height: 2rem;
-}
-
-.min-h-8 {
-  min-height: 2rem;
-}
-
 .min-h-6 {
   min-height: 1.5rem;
 }
@@ -893,13 +885,23 @@ select {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-.text-\[\#99a2dd\] {
-  --tw-text-opacity: 1;
-  color: rgb(153 162 221 / var(--tw-text-opacity));
-}
-
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+a {
+  --tw-text-opacity: 1;
+  color: rgb(255 144 0 / var(--tw-text-opacity));
+  text-decoration-line: underline;
+}
+
+a:hover {
+  text-decoration-line: none;
+}
+
+body {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
 .btn {
@@ -969,11 +971,6 @@ select {
 .hover\:bg-\[\#5961bb\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(89 97 187 / var(--tw-bg-opacity));
-}
-
-.hover\:bg-\[\#5951aa\]:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(89 81 170 / var(--tw-bg-opacity));
 }
 
 .group:hover .group-hover\:block {

@@ -12,6 +12,6 @@
         "default_popup": "index.html"
     },
     "host_permissions": [
-        "*://np.ironhelmet.com/game/*"
+        "https://np.ironhelmet.com/game/*"
     ]
 }

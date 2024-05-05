@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+a {
+    @apply text-[#FF9000] underline hover:no-underline;
+}
+
+body {
+    @apply text-white;
+}
+
 .btn {
     @apply py-[6px] px-12 bg-[#5961bb] hover:bg-[#FF9000] text-white text-lg rounded;
 }
