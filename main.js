@@ -19,6 +19,46 @@ const subheading = document.getElementById("game-id");
  * @property {LogEntryObject[]} logs
  */
 
+async function initialize() {
+    const ui = new UI();
+
+    const gameId = await getGameId();
+    if (gameId === null) {
+        ui.showWrongUrlNotification();
+        return;
+    }
+
+    const game = new Game(ui, gameId);
+    subheading.textContent = gameId;
+    ui.refresh(gameId);
+
+    submitBtn.addEventListener("click", () => submitNewLogEntry(game, input.value.trim()));
+    clearBtn.addEventListener("click", () => {
+        input.value = "";
+        input.focus();
+    });
+}
+
+/**
+ * 
+ * @param {Game} game 
+ * @param {string} logEntryText 
+ * @returns 
+ */
+function submitNewLogEntry(game, logEntryText) {
+    if (logEntryText.length == 0) {
+        alert("A log entry is required!");
+        return;
+    }
+
+    game.log.addLogEntry(logEntryText);
+    game.save();
+
+    game.ui.refresh(game.id);
+    input.value = "";
+    input.focus();
+}
+
 /**
  * Returns a promise that resolves to the URL of the current tab.
  * @async
@@ -286,42 +326,4 @@ class LogEntry {
     }
 }
 
-submitBtn.addEventListener("click", async () => {
-    const ui = new UI();
-
-    if (input.value.trim().length == 0) {
-        alert("A log entry is required!");
-        return;
-    }
-
-    const gameId = await getGameId();
-    if (gameId === null) {
-        ui.showWrongUrlNotification();
-        return;
-    }
-
-    const game = new Game(ui, gameId);
-    game.log.addLogEntry(input.value);
-    game.save();
-
-    game.ui.refresh(gameId);
-    input.value = "";
-    input.focus();
-});
-
-clearBtn.addEventListener("click", () => {
-    input.value = "";
-    input.focus();
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const ui = new UI();
-    const gameId = await getGameId();
-    if (gameId === null) {
-        ui.showWrongUrlNotification();
-        return;
-    }
-
-    subheading.textContent = gameId;
-    ui.refresh(gameId);
-});
+document.addEventListener("DOMContentLoaded", async () => initialize());
