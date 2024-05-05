@@ -71,15 +71,28 @@ function addLogEntryToLocalStorage(gameId, text) {
 }
 
 /**
+ * Removes a log entry from the game log associated with the given gameId.
+ * @param {number} gameId The game to be updated.
+ * @param {number} indexToDelete The index of the log to be removed.
+ */
+function deleteLogEntryFromLocalStorage(gameId, indexToDelete) {
+    const gameLog = getGameLogFromLocalStorage(gameId);
+    gameLog.logs.splice(indexToDelete, 1);
+    const json = JSON.stringify(gameLog);
+    localStorage.setItem(gameId, json);
+    refreshLogsInUi(gameId);
+}
+
+/**
  * Presents the logs in the UI.
  * @param {number} gameId
  */
-function setLogEntriesInLogContainer(gameId) {
+function refreshLogsInUi(gameId) {
     logContainer.innerHTML = "";
     const gameLog = getGameLogFromLocalStorage(gameId);
     for (let i = gameLog.logs.length - 1; i >= 0; i--) {
         const entry = gameLog.logs[i];
-        makeLogEntryHtml(entry);
+        makeLogEntryHtml(i, gameId, entry);
     }
 }
 
@@ -97,22 +110,34 @@ function addStringOfClassesToHtmlElement(elem, classes) {
 /**
  * Helper function to construct log entry HTML structure.
  * Appends the log entry to the container HTML element.
+ * @param {number} index
+ * @param {number} gameId
  * @param {LogEntry} logEntry 
  */
-function makeLogEntryHtml(logEntry) {
-    const containerClasses = "p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg"
-    const dateClasses = "flex justify-end text-sm text-[#99a2ff]"
-    const headerClasses = "mb-2"
+function makeLogEntryHtml(index, gameId, logEntry) {
+    const containerClasses = "group p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb]"
+    const dateClasses = "flex justify-end text-sm text-[#99a2ff] group-hover:hidden"
+    const headerClasses = "flex justify-end min-h-6"
+    const deleteBtnStyles = "btn-sm hidden group-hover:block"
 
     const containerElem = document.createElement("div");
     addStringOfClassesToHtmlElement(containerElem, containerClasses);
     const headerElem = document.createElement("header");
     addStringOfClassesToHtmlElement(headerElem, headerClasses);
     const dateElem = document.createElement("span");
-    addStringOfClassesToHtmlElement(dateElem, dateClasses)
+    addStringOfClassesToHtmlElement(dateElem, dateClasses);
+    const deleteBtnElem = document.createElement("button");
+    addStringOfClassesToHtmlElement(deleteBtnElem, deleteBtnStyles);
+    deleteBtnElem.textContent = "Delete";
+    deleteBtnElem.addEventListener("click", () => {
+        console.log("Deleting number " + index);
+        deleteLogEntryFromLocalStorage(gameId, index);
+    });
 
     dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
-    containerElem.appendChild(dateElem);
+    headerElem.appendChild(deleteBtnElem);
+    headerElem.appendChild(dateElem);
+    containerElem.appendChild(headerElem);
 
     const lines = logEntry.text.split("\n");
     for (let i = 0; i < lines.length; i++) {
@@ -133,7 +158,7 @@ submitBtn.addEventListener("click", async () => {
 
     const gameId = await getGameId();
     addLogEntryToLocalStorage(gameId, input.value);
-    setLogEntriesInLogContainer(gameId);
+    refreshLogsInUi(gameId);
     input.value = "";
     input.focus();
 });
@@ -141,5 +166,5 @@ submitBtn.addEventListener("click", async () => {
 document.addEventListener("DOMContentLoaded", async () => {
     const gameId = await getGameId();
     subheading.textContent = gameId;
-    setLogEntriesInLogContainer(gameId);
+    refreshLogsInUi(gameId);
 });

@@ -6,6 +6,10 @@
     @apply py-[6px] px-12 bg-[#5961bb] hover:bg-[#FF9000] text-white text-lg rounded;
 }
 
+.btn-sm {
+    @apply py-1 px-2 bg-[#5961bb] hover:bg-[#FF9000] text-white text-xs rounded;
+}
+
 ::-webkit-scrollbar {
     @apply w-1 bg-slate-800;
 }
