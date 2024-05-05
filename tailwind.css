@@ -29,3 +29,19 @@ body {
 ::-webkit-scrollbar-corner {
     @apply bg-slate-800;
 }
+
+.entry-container {
+    @apply p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb];
+}
+
+.entry-header {
+    @apply flex justify-end min-h-6;
+}
+
+.entry-date {
+    @apply flex justify-end text-sm text-[#99a2ff] group-hover:hidden;
+}
+
+.entry-delete-btn {
+    @apply btn-sm hidden group-hover:block;
+}

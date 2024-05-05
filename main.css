@@ -770,16 +770,8 @@ select {
   display: flex;
 }
 
-.hidden {
-  display: none;
-}
-
 .h-\[180px\] {
   height: 180px;
-}
-
-.min-h-6 {
-  min-height: 1.5rem;
 }
 
 .w-\[450px\] {
@@ -788,10 +780,6 @@ select {
 
 .w-full {
   width: 100%;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-between {
@@ -825,10 +813,6 @@ select {
   padding: 0.75rem;
 }
 
-.p-4 {
-  padding: 1rem;
-}
-
 .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
@@ -856,18 +840,8 @@ select {
   line-height: 1.75rem;
 }
 
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
 .tracking-wide {
   letter-spacing: 0.025em;
-}
-
-.text-\[\#99a2ff\] {
-  --tw-text-opacity: 1;
-  color: rgb(153 162 255 / var(--tw-text-opacity));
 }
 
 .text-\[\#FDF0DC\] {
@@ -959,24 +933,67 @@ body {
   background-color: rgb(30 41 59 / var(--tw-bg-opacity));
 }
 
-.odd\:bg-\[\#2C3273\]:nth-child(odd) {
+.entry-container {
+  padding: 1rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.entry-container:nth-child(odd) {
   --tw-bg-opacity: 1;
   background-color: rgb(44 50 115 / var(--tw-bg-opacity));
 }
 
-.even\:bg-transparent:nth-child(even) {
+.entry-container:nth-child(even) {
   background-color: transparent;
 }
 
-.hover\:bg-\[\#5961bb\]:hover {
+.entry-container:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(89 97 187 / var(--tw-bg-opacity));
 }
 
-.group:hover .group-hover\:block {
-  display: block;
+.entry-header {
+  display: flex;
+  min-height: 1.5rem;
+  justify-content: flex-end;
 }
 
-.group:hover .group-hover\:hidden {
+.entry-date {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(153 162 255 / var(--tw-text-opacity));
+}
+
+.group:hover .entry-date {
   display: none;
+}
+
+.entry-delete-btn {
+  display: none;
+  border-radius: 0.25rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(89 97 187 / var(--tw-bg-opacity));
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.entry-delete-btn:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 144 0 / var(--tw-bg-opacity));
+}
+
+.group:hover .entry-delete-btn {
+  display: block;
 }

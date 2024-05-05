@@ -30,7 +30,7 @@ async function initialize() {
 
     const game = new Game(ui, gameId);
     subheading.textContent = gameId;
-    ui.refresh(gameId);
+    ui.refresh(game.log);
 
     submitBtn.addEventListener("click", () => submitNewLogEntry(game, input.value.trim()));
     clearBtn.addEventListener("click", () => {
@@ -54,7 +54,7 @@ function submitNewLogEntry(game, logEntryText) {
     game.log.addLogEntry(logEntryText);
     game.save();
 
-    game.ui.refresh(game.id);
+    game.ui.refresh(game.log);
     input.value = "";
     input.focus();
 }
@@ -111,16 +111,14 @@ class UI {
     }
 
     /**
-     * Presents the logs in the UI.
-     * @param {number} gameId
+     * Updates the logs in the UI.
+     * @param {GameLog} gameLog
      */
-    refresh(gameId) {
-        const game = new Game(new UI(), gameId);
-
+    refresh(gameLog) {
         logContainer.innerHTML = "";
-        for (let i = game.log.logs.length - 1; i >= 0; i--) {
-            const entry = game.log.logs[i];
-            this.#makeLogEntryHtml(i, gameId, entry);
+        for (let i = gameLog.logs.length - 1; i >= 0; i--) {
+            const entry = gameLog.logs[i];
+            this.#makeLogEntryHtml(i, gameLog.gameId, entry);
         }
     }
 
@@ -131,7 +129,7 @@ class UI {
         const container = document.querySelector("#content-section");
 
         const p = document.createElement("p");
-        this.#addClasses(p, "text-lg")
+        p.classList.add("text-lg");
         const t1 = document.createElement("span");
         const t2 = document.createElement("span");
         const link = document.createElement("a");
@@ -151,25 +149,24 @@ class UI {
     }
 
     #makeLogEntryHtml(index, gameId, logEntry) {
-        const containerClasses = "group p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb]"
-        const dateClasses = "flex justify-end text-sm text-[#99a2ff] group-hover:hidden"
-        const headerClasses = "flex justify-end min-h-6"
-        const deleteBtnStyles = "btn-sm hidden group-hover:block"
-
         const containerElem = document.createElement("div");
-        this.#addClasses(containerElem, containerClasses);
+        containerElem.classList.add("group");
+        containerElem.classList.add("entry-container");
+
         const headerElem = document.createElement("header");
-        this.#addClasses(headerElem, headerClasses);
+        headerElem.classList.add("entry-header")
+
         const dateElem = document.createElement("span");
-        this.#addClasses(dateElem, dateClasses);
+        dateElem.classList.add("entry-date");
+
         const deleteBtnElem = document.createElement("button");
-        this.#addClasses(deleteBtnElem, deleteBtnStyles);
+        deleteBtnElem.classList.add("entry-delete-btn")
         deleteBtnElem.textContent = "Delete";
         deleteBtnElem.addEventListener("click", () => {
             const game = new Game(new UI(), gameId);
             game.log.removeAtIndex(index);
             game.save();
-            this.refresh(gameId);
+            this.refresh(game.log);
         });
 
         dateElem.textContent = dateFns.format(logEntry.timestamp, "eee d MMM HH:mm");
@@ -186,17 +183,6 @@ class UI {
         }
 
         logContainer.appendChild(containerElem);
-    }
-
-    /**
-     * Adds the given CSS classes to the given HTML element.
-     * @param {HTMLElement} elem The HTML element.
-     * @param {string} classes A string of space separated CSS classes.
-     */
-    #addClasses(elem, classes) {
-        for (let c of classes.split(" ")) {
-            elem.classList.add(c);
-        }
     }
 }
 
