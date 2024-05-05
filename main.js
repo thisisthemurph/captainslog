@@ -1,5 +1,7 @@
 /** @type HTMLButtonElement */
 const submitBtn = document.getElementById("submit-btn");
+/** @type HTMLButtonElement */
+const clearBtn = document.getElementById("clear-btn");
 /** @type HTMLTextAreaElement */
 const input = document.getElementById("log-input");
 /** @type HTMLElement */
@@ -178,6 +180,11 @@ submitBtn.addEventListener("click", async () => {
     game.save();
 
     refreshLogsInUi(gameId);
+    input.value = "";
+    input.focus();
+});
+
+clearBtn.addEventListener("click", () => {
     input.value = "";
     input.focus();
 });
