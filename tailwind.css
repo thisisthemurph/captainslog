@@ -42,6 +42,10 @@ body {
     @apply flex justify-end text-sm text-[#99a2ff] group-hover:hidden;
 }
 
+.entry-text-container {
+    @apply prose text-white text-lg;
+}
+
 .entry-delete-btn {
     @apply btn-sm hidden group-hover:block;
 }

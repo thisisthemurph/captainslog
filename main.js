@@ -174,14 +174,17 @@ class UI {
         headerElem.appendChild(dateElem);
         containerElem.appendChild(headerElem);
 
+        const textContainerElem = document.createElement("div");
+        textContainerElem.classList.add("entry-text-container");
         const lines = logEntry.text.split("\n");
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const textElem = document.createElement("p");
             textElem.textContent = line;
-            containerElem.appendChild(textElem);
+            textContainerElem.appendChild(textElem);
         }
 
+        containerElem.appendChild(textContainerElem);
         logContainer.appendChild(containerElem);
     }
 }
