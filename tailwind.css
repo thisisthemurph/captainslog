@@ -31,7 +31,7 @@ body {
 }
 
 .entry-container {
-    @apply p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg hover:bg-[#5961bb];
+    @apply p-4 odd:bg-[#2C3273] even:bg-transparent text-white text-lg;
 }
 
 .entry-header {

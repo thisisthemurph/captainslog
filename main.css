@@ -950,11 +950,6 @@ body {
   background-color: transparent;
 }
 
-.entry-container:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(89 97 187 / var(--tw-bg-opacity));
-}
-
 .entry-header {
   display: flex;
   min-height: 1.5rem;
